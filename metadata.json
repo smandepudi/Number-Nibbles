@@ -1,0 +1,5 @@
+{
+  "name": "NumberNibbles",
+  "description": "An application that acts as a Math instructor, analyzing a screenshot of a math problem to generate a specified number of similar problems with varied themes and variables, complete with an answer key.",
+  "requestFramePermissions": []
+}
