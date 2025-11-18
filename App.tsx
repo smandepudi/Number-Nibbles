@@ -1,3 +1,4 @@
+
 import React, { useState, useCallback } from 'react';
 import { GeneratedProblem } from './types';
 import { generateProblemsFromImage } from './services/geminiService';
@@ -16,6 +17,8 @@ const App: React.FC = () => {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [numProblemsStr, setNumProblemsStr] = useState<string>('5');
   const [generatedProblems, setGeneratedProblems] = useState<GeneratedProblem[]>([]);
+  const [history, setHistory] = useState<GeneratedProblem[][]>([]);
+  const [historyIndex, setHistoryIndex] = useState<number>(-1);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isDownloading, setIsDownloading] = useState<boolean>(false);
   const [downloadProgress, setDownloadProgress] = useState<number>(0);
@@ -59,7 +62,14 @@ const App: React.FC = () => {
 
     try {
       const result = await generateProblemsFromImage(imageFile, numProblems);
+      const newHistory = history.slice(0, historyIndex + 1);
+      newHistory.push(result.problems);
+      
+      setHistory(newHistory);
+      const newIndex = newHistory.length - 1;
+      setHistoryIndex(newIndex);
       setGeneratedProblems(result.problems);
+
     } catch (e: unknown) {
       if (e instanceof Error) {
         setError(e.message);
@@ -69,7 +79,7 @@ const App: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [imageFile, numProblemsStr, isNumProblemsInvalid, numProblems]);
+  }, [imageFile, numProblemsStr, isNumProblemsInvalid, numProblems, history, historyIndex]);
 
   const handleDownload = async () => {
     if (generatedProblems.length === 0 || isDownloading) return;
@@ -176,6 +186,25 @@ const App: React.FC = () => {
     setIsDownloading(false);
     setDownloadProgress(0);
     setDownloadStatusText('');
+    setHistoryIndex(-1);
+  };
+
+  const handleHistoryBack = () => {
+    if (historyIndex > 0) {
+      const newIndex = historyIndex - 1;
+      setHistoryIndex(newIndex);
+      setGeneratedProblems(history[newIndex]);
+    } else {
+      handleBack();
+    }
+  };
+
+  const handleHistoryForward = () => {
+    if (historyIndex < history.length - 1) {
+      const newIndex = historyIndex + 1;
+      setHistoryIndex(newIndex);
+      setGeneratedProblems(history[newIndex]);
+    }
   };
 
   const renderContent = () => {
@@ -186,7 +215,7 @@ const App: React.FC = () => {
     if (generatedProblems.length > 0) {
       return (
         <>
-          <div className="text-left mb-6">
+          <div className="flex justify-between items-center mb-6">
             <button
               onClick={handleBack}
               className="inline-flex items-center text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-500 dark:hover:text-indigo-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-gray-900 rounded-md transition-colors"
@@ -197,6 +226,28 @@ const App: React.FC = () => {
               </svg>
               Start Over
             </button>
+            <div className="flex items-center space-x-2">
+              <button
+                onClick={handleHistoryBack}
+                disabled={historyIndex < 0}
+                className="p-2 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                aria-label="Previous problem set"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+              <button
+                onClick={handleHistoryForward}
+                disabled={historyIndex >= history.length - 1}
+                className="p-2 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                aria-label="Next problem set"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+            </div>
           </div>
           <section>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -321,6 +372,12 @@ const App: React.FC = () => {
     );
   };
   
+  const navContainerClasses = [
+    "mb-4",
+    "flex",
+    "justify-end",
+    "max-w-2xl mx-auto"
+  ].filter(Boolean).join(" ");
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 font-sans">
@@ -333,6 +390,33 @@ const App: React.FC = () => {
             Upload a math problem screenshot, and our AI instructor will create similar, engaging problems for you.
           </p>
         </header>
+
+        {history.length > 0 && generatedProblems.length === 0 && (
+          <div className={navContainerClasses}>
+            <div className="flex items-center space-x-2">
+              <button
+                onClick={handleHistoryBack}
+                disabled={historyIndex <= -1}
+                className="p-2 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                aria-label="Previous problem set"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+              <button
+                onClick={handleHistoryForward}
+                disabled={historyIndex >= history.length - 1}
+                className="p-2 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                aria-label="Next problem set"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        )}
 
         {renderContent()}
 
