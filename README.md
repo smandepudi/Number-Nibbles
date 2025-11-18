@@ -1,20 +1,42 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# NumberNibbles - Math Problem Generator
 
-# Run and deploy your AI Studio app
+NumberNibbles is an AI-powered application that takes a screenshot of a math problem and generates similar practice problems with an answer key.
 
-This contains everything you need to run your app locally.
+## Setup & Running Independently
 
-View your app in AI Studio: https://ai.studio/apps/drive/1EfJvufMSaY3L-o3V0f6q6LqWPoRWX3sV
+### Option 1: Deploy to the Web (Vercel) - Recommended
+This is the easiest way to share your app.
 
-## Run Locally
+1. Push this code to a GitHub repository.
+2. Go to [Vercel](https://vercel.com) and sign up/login.
+3. Click "Add New Project" and import your GitHub repository.
+4. **Important:** In the "Environment Variables" section:
+   - **Name:** `VITE_API_KEY`
+   - **Value:** Your Google Gemini API Key (from AI Studio).
+5. Click "Deploy".
 
-**Prerequisites:**  Node.js
+### Option 2: Run Locally (On your Computer)
 
+1. Install [Node.js](https://nodejs.org/).
+2. Clone this repository or download the files.
+3. Open a terminal/command prompt in the project folder.
+4. Install dependencies:
+   ```bash
+   npm install
+   ```
+5. Create a file named `.env` in the root folder and add your API key:
+   ```
+   VITE_API_KEY=AIzaSy...YourKeyHere...
+   ```
+6. Start the app:
+   ```bash
+   npm run dev
+   ```
+7. Open the link shown in the terminal (usually http://localhost:5173).
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+## Technologies Used
+- React + TypeScript
+- Vite
+- Google Gemini API (@google/genai)
+- TailwindCSS
+- jsPDF & html2canvas (for PDF export)
