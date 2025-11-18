@@ -1,4 +1,4 @@
-# NumberNibbles - Math Problem Generator
+# NumberNibbles - Math Problem Generator uisng Gemini
 
 NumberNibbles is an AI-powered application that takes a screenshot of a math problem and generates similar practice problems with an answer key.
 
