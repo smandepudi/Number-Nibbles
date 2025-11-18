@@ -1,16 +1,10 @@
-
 import React, { useState, useCallback } from 'react';
 import { GeneratedProblem } from './types';
 import { generateProblemsFromImage } from './services/geminiService';
 import Loader from './components/Loader';
 import ProgressBar from './components/ProgressBar';
-
-declare global {
-  interface Window {
-    jspdf: any;
-    html2canvas: any;
-  }
-}
+import { jsPDF } from "jspdf";
+import html2canvas from "html2canvas";
 
 const App: React.FC = () => {
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -106,7 +100,7 @@ const App: React.FC = () => {
       clone.style.width = `${element.offsetWidth}px`;
       
       document.body.appendChild(clone);
-      const canvas = await window.html2canvas(clone, { scale: 2 });
+      const canvas = await html2canvas(clone, { scale: 2 });
       document.body.removeChild(clone);
       return canvas;
     };
@@ -115,7 +109,7 @@ const App: React.FC = () => {
       setDownloadProgress(10);
       setDownloadStatusText('Creating PDF document...');
       await new Promise(resolve => setTimeout(resolve, 50));
-      const { jsPDF } = window.jspdf;
+      
       const pdf = new jsPDF('p', 'mm', 'a4');
       const pdfWidth = pdf.internal.pageSize.getWidth();
       const pdfHeight = pdf.internal.pageSize.getHeight();
@@ -257,6 +251,9 @@ const App: React.FC = () => {
                   {generatedProblems.map((p, index) => (
                     <li key={index} className="p-4 bg-gray-100 dark:bg-slate-800 rounded-lg">
                       <p className="font-semibold text-indigo-600 dark:text-indigo-400 mb-2">Problem {index + 1}</p>
+                      {p.image && (
+                        <img src={p.image} alt={`Generated image for problem ${index + 1}`} className="my-4 rounded-lg shadow-md w-48 h-auto mx-auto border border-gray-200 dark:border-gray-700" />
+                      )}
                       <p className="text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{p.problem}</p>
                     </li>
                   ))}
